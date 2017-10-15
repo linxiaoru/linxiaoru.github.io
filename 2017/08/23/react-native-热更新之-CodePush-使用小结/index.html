@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="React Native,前端,CodePush," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="先从一个需求说起需求是这样的：为满足线上版本紧急更新重要内容（包括 JS/HTML/CSS/IMAGE 等），使用 CodePush 进行热更新， 当有新的更新内容需要更新时，客户端弹出自定义的更新提示弹窗，用户可以选择点击立即更新进行更新，或者点击关闭按钮忽略这次更新。">
+<meta name="keywords" content="React Native,前端,CodePush">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-native 热更新之 CodePush 使用小结">
+<meta property="og:url" content="http://yoursite.com/2017/08/23/react-native-热更新之-CodePush-使用小结/index.html">
+<meta property="og:site_name" content="Cheryl Lin">
+<meta property="og:description" content="先从一个需求说起需求是这样的：为满足线上版本紧急更新重要内容（包括 JS/HTML/CSS/IMAGE 等），使用 CodePush 进行热更新， 当有新的更新内容需要更新时，客户端弹出自定义的更新提示弹窗，用户可以选择点击立即更新进行更新，或者点击关闭按钮忽略这次更新。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-10-09T15:51:36.418Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="react-native 热更新之 CodePush 使用小结">
+<meta name="twitter:description" content="先从一个需求说起需求是这样的：为满足线上版本紧急更新重要内容（包括 JS/HTML/CSS/IMAGE 等），使用 CodePush 进行热更新， 当有新的更新内容需要更新时，客户端弹出自定义的更新提示弹窗，用户可以选择点击立即更新进行更新，或者点击关闭按钮忽略这次更新。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/08/23/react-native-热更新之-CodePush-使用小结/"/>
+
+
+
+
+
+  <title>react-native 热更新之 CodePush 使用小结 | Cheryl Lin</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?117c881d3f49d6efca797e1f6f0842d3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Cheryl Lin</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-主页">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            主页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-前端">
+          <a href="/tags/前端" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tag"></i> <br />
+            
+            前端
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-随笔">
+          <a href="/tags/随笔" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            随笔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-归档">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/23/react-native-热更新之-CodePush-使用小结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Cheryl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cheryl Lin">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">react-native 热更新之 CodePush 使用小结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-23T22:58:23+08:00">
+                2017-08-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="先从一个需求说起"><a href="#先从一个需求说起" class="headerlink" title="先从一个需求说起"></a>先从一个需求说起</h4><p>需求是这样的：为满足线上版本紧急更新重要内容（包括 JS/HTML/CSS/IMAGE 等），使用 CodePush 进行热更新， 当有新的更新内容需要更新时，客户端弹出自定义的更新提示弹窗，用户可以选择点击立即更新进行更新，或者点击关闭按钮忽略这次更新。</p>
+<a id="more"></a>
+<h4 id="如何实现"><a href="#如何实现" class="headerlink" title="如何实现"></a>如何实现</h4><p><strong>CodePush 实现热更新基本流程：</strong><br>  1.安装 CodePush CLI<br>  2.创建一个CodePush 账号<br>  3.在CodePush服务器注册app<br>  4.在app上添加CodePush SDK，配置升级相关代码<br>  5.更新代码后，发布一个应用更新到服务器<br>  6.app收到升级推送<br>针对 React Native 的 CodePush 具体可以查看 <a href="https://github.com/Microsoft/react-native-code-push" target="_blank" rel="external">react-native-code-push 文档</a> </p>
+<p><strong>客户端检测更新并在用户操作之后进行相应的更新升级</strong><br>根据 CodePush 的 <a href="https://github.com/Microsoft/react-native-code-push/blob/master/docs/api-js.md" target="_blank" rel="external">Api 文档</a>, </p>
+<blockquote>
+<p>sync: Allows checking for an update, downloading it and installing it, all with a single call. Unless you need custom UI and/or behavior, we recommend most developers to use this method when integrating CodePush into their apps</p>
+</blockquote>
+<p>sync 方法能够检测更新，下载并安装，而且这个方法也是比较推荐的方法，但是需求中说了，需要自定义的弹窗提示，所以这一个方法并不是能够直接可行的。这个时候，就需要再看下文档中提供的另一个方法了 checkForUpdate 方法，这个方法用来检测是否有可用更新，具体实现过程：</p>
+<ul>
+<li>在 App 首页（方便显示自定义弹窗） ComponentDidMount 中使用 checkForUpdate 检测是否有更新内容即可，示例：</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">codePush.checkForUpdate()</div><div class="line">.then(<span class="function">(<span class="params">update</span>) =&gt;</span> &#123;</div><div class="line">    <span class="keyword">if</span> (!update) &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">"The app is up to date!"</span>);  <span class="comment">// 没有可用的更新</span></div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">"An update is available! Should we download it?"</span>); <span class="comment">// 有可用的更新</span></div><div class="line">        <span class="keyword">this</span>.setState(&#123;   </div><div class="line">          modelVisiable: <span class="literal">true</span>   <span class="comment">// 设置 Modal 弹窗可见</span></div><div class="line">        &#125;)</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<ul>
+<li><p>更新弹窗可见后，点击立即更新按钮</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;TouchableOpacity onPress=&#123;<span class="keyword">this</span>.updateNow.bind(<span class="keyword">this</span>)&#125;&gt;</div><div class="line">  &lt;Text style=&#123;styles.updateButton&#125;&gt;立即更新&lt;<span class="regexp">/Text&gt;</span></div><div class="line"><span class="regexp">&lt;/</span>TouchableOpacity&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>用户选择立即更新之后，开始进行更新下载<br>这个时候，就能使用 sync 方法了，下载并安装，sync 方法提供一个 Dialog 选项，这是用来自带的类似 confirm 弹窗，我们已经有弹窗了，就不需要了, installMode 参数就是安装模式，我选择 CodePush.InstallMode.IMMEDIATE，为了展示更新进度，就需要两个方法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">syncImmediate() &#123;</div><div class="line">  CodePush.sync(</div><div class="line">    &#123; <span class="attr">installMode</span>: CodePush.InstallMode.IMMEDIATE &#125;,</div><div class="line">    <span class="keyword">this</span>.codePushStatusDidChange.bind(<span class="keyword">this</span>),</div><div class="line">    <span class="keyword">this</span>.codePushDownloadDidProgress.bind(<span class="keyword">this</span>)</div><div class="line">  );</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>codePushStatusDidChange 用来跟踪更新状态，codePushDownloadDidProgress 则是更新的进度，实例</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line">codePushStatusDidChange(syncStatus) &#123;</div><div class="line">   <span class="keyword">switch</span>(syncStatus) &#123;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.CHECKING_FOR_UPDATE:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"检测更新"</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.DOWNLOADING_PACKAGE:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"下载啦"</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.AWAITING_USER_ACTION:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"等用户操作"</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.INSTALLING_UPDATE:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"开始安装"</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.UP_TO_DATE:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"更新好了啦"</span>, <span class="attr">progress</span>: <span class="literal">false</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.UPDATE_IGNORED:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"用户取消了更新"</span>, <span class="attr">progress</span>: <span class="literal">false</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.UPDATE_INSTALLED:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"安装好了都，重新启动 App 就生效"</span>, <span class="attr">progress</span>: <span class="literal">false</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">     <span class="keyword">case</span> CodePush.SyncStatus.UNKNOWN_ERROR:</div><div class="line">       <span class="keyword">this</span>.setState(&#123; <span class="attr">syncMessage</span>: <span class="string">"出错了"</span>, <span class="attr">progress</span>: <span class="literal">false</span> &#125;);</div><div class="line">       <span class="keyword">break</span>;</div><div class="line">   &#125;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> codePushDownloadDidProgress(progress) &#123;</div><div class="line">   <span class="keyword">this</span>.setState(&#123; progress &#125;);  <span class="comment">// progress 有两个属性，当前接收到的数据 receivedBytes 和总的数据量 totalBytes,</span></div><div class="line">   </div><div class="line">   <span class="keyword">let</span> percent = <span class="built_in">parseInt</span>(progress.receivedBytes / progress.totalBytes * <span class="number">100</span>);</div><div class="line">   <span class="keyword">this</span>.setState(&#123;</div><div class="line">     codePushProgress: <span class="string">'更新进度:'</span> + percent + <span class="string">'%'</span>,    <span class="comment">// 为了显示进度百分比</span></div><div class="line">   &#125;);</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>下载完成<br>下载完成之后，必须要重新启动 App ,当前的更新才能生效，这时我们已经可以在 codePushStatusDidChange 中得到是否安装好了的状态，当状态为 CodePush.SyncStatus.UPDATE_INSTALLED, 只要适时地在当前的弹窗中显示一个按钮，让用户点击之后重启 App 就好，CodePush 也提供了重启 App 的方法<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">CodePush.restartApp();</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="完成"><a href="#完成" class="headerlink" title="完成"></a>完成</h4><p>以上就是我完成这个需求的思路及方法，仔细阅读文档，查看文档实例，总会有很多的实现的方法，随着之后的项目代码优化，可能有更好的实现方式。</p>
+<h4 id="方案优化"><a href="#方案优化" class="headerlink" title="方案优化"></a>方案优化</h4><p>2017.09.18 针对需求不变的情况下，在使用了 <code>checkForUpdate（）</code> 方法后，获取是否有新的内容需要更新，当有需要更新时，弹出更新提示，然后等待用户点击立即更新按钮，这个时候可以直接使用 <code>download()</code> 方法，下载更新包，更新完毕后，用户点击立即重启完成更新按钮后，<code>install</code> 安装包。</p>
+<p>这个方案主要是取消了使用 <code>sync()</code> 方法，<code>download（）</code> 方法中同样也可以获取下载进度，也不再去根据状态来判断是否更新完成，实例修改后如下<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">componentWillMount（）&#123;</div><div class="line"> CodePush.checkForUpdate(Config.codePushKey)</div><div class="line">          .then(<span class="function">(<span class="params">update</span>) =&gt;</span> &#123;</div><div class="line">            <span class="keyword">this</span>.apk_package = update;  <span class="comment">// 更新状态等信息</span></div><div class="line">            <span class="keyword">if</span> (update) &#123;</div><div class="line">              <span class="comment">// 有可用的更新，这时进行一些控制更新提示弹出层的的操作</span></div><div class="line">            &#125;<span class="keyword">else</span>&#123;</div><div class="line">              <span class="comment">// 没有可用的更新</span></div><div class="line">            &#125;</div><div class="line">          &#125;);</div><div class="line">&#125;</div><div class="line"></div><div class="line">  _updateCodePush = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">    <span class="keyword">this</span>.apk_package.download(<span class="function">(<span class="params">progress</span>) =&gt;</span> &#123;</div><div class="line">      <span class="comment">// 更新进度换算</span></div><div class="line">      <span class="keyword">let</span> percent = <span class="built_in">parseInt</span>(progress.receivedBytes / progress.totalBytes * <span class="number">100</span>);</div><div class="line">      <span class="keyword">this</span>.setState(&#123;</div><div class="line">        codePushProgress: <span class="string">'更新进度:'</span> + percent + <span class="string">'%'</span>,</div><div class="line">      &#125;);     </div><div class="line">    &#125;).then(<span class="function">(<span class="params">localPackage</span>)=&gt;</span>&#123;</div><div class="line">      <span class="keyword">this</span>.apk_localPackage = localPackage;   <span class="comment">// 下载完毕了，这时候已经获取了更新包</span></div><div class="line">      <span class="comment">// 如若不需要用户进行是否立即重启生效更新的操作，可以直接进行 install</span></div><div class="line">    &#125;);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  _installPagage = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">    <span class="comment">// 待用户同意立即重启以生效更新后，进行 install 操作，install 方法内置了安装后立即重启的方法</span></div><div class="line">     <span class="keyword">this</span>.apk_localPackage.install(CodePush.InstallMode.IMMEDIATE);</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<h3 id="CodePush-常用命令"><a href="#CodePush-常用命令" class="headerlink" title="CodePush 常用命令"></a>CodePush 常用命令</h3><ol>
+<li><p>查看更新历史</p>
+<blockquote>
+<p>code-push deployment h myApp Staging<br> 或者<br>code-push deployment history myApp Production</p>
+</blockquote>
+</li>
+<li><p>查看应用key</p>
+<blockquote>
+<p>code-push deployment ls myApp -k<br> 或者<br>code-push deployment list myApp -k</p>
+</blockquote>
+</li>
+<li><p>与账号相关的命令</p>
+<ul>
+<li><p>在账号里面添加一个新的app</p>
+<blockquote>
+<p>code-push app add myNewApp</p>
+</blockquote>
+</li>
+<li><p>在账号里移除一个app</p>
+<blockquote>
+<p>code-push app remove myApp<br>  或者<br>code-push app rm myApp</p>
+</blockquote>
+</li>
+<li><p>重命名一个存在app</p>
+<blockquote>
+<p>code-push app rename myApp myAppNewName</p>
+</blockquote>
+</li>
+<li><p>列出账号下面的所有app</p>
+<blockquote>
+<p>code-push app list<br>  或者<br>code-push app ls</p>
+</blockquote>
+</li>
+<li><p>把app的所有权转移到另外一个账号</p>
+<blockquote>
+<p>code-push app transfer</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>推送更新内容</p>
+<p> code-push release-react <appname> <platform></platform></appname></p>
+</li>
+</ol>
+<p>示例(默认走<code>Staging</code>分支):</p>
+<blockquote>
+<p>code-push release-react MyApp ios<br>code-push release-react MyApp-Android android</p>
+</blockquote>
+<p>指定部署分支名称 </p>
+<blockquote>
+<p>code-push release-react MyApp android -d Production</p>
+</blockquote>
+<p>指定开发版本或发布版本(默认false)</p>
+<blockquote>
+<p>code-push release-react MyApp windows –dev</p>
+</blockquote>
+<p>强制更新描述内容 </p>
+<blockquote>
+<p>code-push release-react MyApp ios -m –description “Modified the header color”</p>
+</blockquote>
+<p>更新一个1/4用户的开发版本</p>
+<blockquote>
+<p>code-push release-react MyApp-Android android –rollout 25% –dev true</p>
+</blockquote>
+<p>更新1.1.0版本的所有用户</p>
+<blockquote>
+<p>code-push release-react MyApp-Android android –targetBinaryVersion “~1.1.0”<br>或者<br>code-push release-react MyApp-Android android –t “~1.1.0”</p>
+</blockquote>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><ul>
+<li><p><a href="http://bbs.reactnative.cn/topic/725/code-push-%E7%83%AD%E6%9B%B4%E6%96%B0%E4%BD%BF%E7%94%A8%E8%AF%A6%E7%BB%86%E8%AF%B4%E6%98%8E%E5%92%8C%E6%95%99%E7%A8%8B" target="_blank" rel="external">Code Push 热更新使用详细说明和教程</a></p>
+</li>
+<li><p><a href="https://github.com/Microsoft/react-native-code-push" target="_blank" rel="external">react-native-code-push 文档</a></p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/React-Native/" rel="tag"># React Native</a>
+          
+            <a href="/tags/前端/" rel="tag"># 前端</a>
+          
+            <a href="/tags/CodePush/" rel="tag"># CodePush</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/23/谢谢你看到我/" rel="next" title="谢谢你看到我">
+                <i class="fa fa-chevron-left"></i> 谢谢你看到我
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/28/react-native-不定宽高网络图片解决方案/" rel="prev" title="react-native 不定宽高网络图片解决方案">
+                react-native 不定宽高网络图片解决方案 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Cheryl" />
+            
+              <p class="site-author-name" itemprop="name">Cheryl</p>
+              <p class="site-description motion-element" itemprop="description">反正竞赛还很长</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/linxiaoru" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:linxiaoruxr@163.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#先从一个需求说起"><span class="nav-number">1.</span> <span class="nav-text">先从一个需求说起</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何实现"><span class="nav-number">2.</span> <span class="nav-text">如何实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#完成"><span class="nav-number">3.</span> <span class="nav-text">完成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方案优化"><span class="nav-number">4.</span> <span class="nav-text">方案优化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CodePush-常用命令"><span class="nav-number"></span> <span class="nav-text">CodePush 常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考链接"><span class="nav-number">1.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Cheryl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
