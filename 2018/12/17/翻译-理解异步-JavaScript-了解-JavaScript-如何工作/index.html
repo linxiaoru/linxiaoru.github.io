@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="前端,翻译," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
+<meta name="keywords" content="前端,翻译">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
+<meta property="og:url" content="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/index.html">
+<meta property="og:site_name" content="Cheryl Lin">
+<meta property="og:description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/callstack.png">
+<meta property="og:image" content="http://yoursite.com/images/runtime.png">
+<meta property="og:image" content="http://yoursite.com/images/eventloop.gif">
+<meta property="og:updated_time" content="2018-12-16T17:45:41.865Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
+<meta name="twitter:description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
+<meta name="twitter:image" content="http://yoursite.com/images/callstack.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/"/>
+
+
+
+
+
+  <title>[翻译]理解异步 JavaScript-了解 JavaScript 如何工作 | Cheryl Lin</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?117c881d3f49d6efca797e1f6f0842d3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Cheryl Lin</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-主页">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            主页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-前端">
+          <a href="/tags/前端" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tag"></i> <br />
+            
+            前端
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-随笔">
+          <a href="/tags/随笔" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            随笔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-归档">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Cheryl">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Cheryl Lin">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">[翻译]理解异步 JavaScript-了解 JavaScript 如何工作</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-17T01:01:36+08:00">
+                2018-12-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/" class="leancloud_visitors" data-flag-title="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>原文：<a href="https://blog.bitsrc.io/understanding-asynchronous-javascript-the-event-loop-74cd408419ff" target="_blank" rel="external">understanding-asynchronous-javascript-the-event-loop</a></p>
+</blockquote>
+<p>JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。</p>
+<p>虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。<br><a id="more"></a></p>
+<p>想象一下从 API 请求一些数据。根据不同的情况，服务器可能需要一些时间来处理请求，同时阻塞主线程使得网页无响应。</p>
+<p>这就是异步 JavaScript 发挥作用的地方。使用异步 JavaScript（如回调，promise，和 async/await），你可以在不阻塞主线程的情况下执行长时间的网络请求。</p>
+<p>虽然没有必要为了成为一名出色的 JavaScript 开发人员而将这些概念全部都学会，但是了解以下内容还是很有帮助的:）</p>
+<p>所以不用多说了，让我们开始吧:)</p>
+<h2 id="同步-JavaScript-是如何工作的？"><a href="#同步-JavaScript-是如何工作的？" class="headerlink" title="同步 JavaScript 是如何工作的？"></a>同步 JavaScript 是如何工作的？</h2><p>在深入研究异步 JavaScript 之前，让我们先了解一下同步 JavaScript 代码在 JavaScript 引擎中是如何执行的。例如：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> second = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Hello there!'</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">const</span> first = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Hi there!'</span>);</div><div class="line">  second();</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'The End'</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line">first();</div></pre></td></tr></table></figure></p>
+<p>要理解上述代码在 JavaScript 引擎中是如何执行的，我们必须要理解执行上下文和调用栈（也叫执行栈）的概念。</p>
+<h3 id="执行上下文"><a href="#执行上下文" class="headerlink" title="执行上下文"></a>执行上下文</h3><p>执行上下文是评估和执行  JavaScript 代码的环境的抽象概念。每当在 JavaScript 中运行时任何代码时，它都在执行上下文中运行。</p>
+<p>函数代码在函数的执行上下文中执行，全局代码在全局执行上下文中执行。每个函数都有自己的执行上下文。</p>
+<h3 id="调用栈"><a href="#调用栈" class="headerlink" title="调用栈"></a>调用栈</h3><p>顾名思义，调用栈是一个具有LIFO（后进先出）结构的堆栈没用于存储代码执行期间所创建的执行上下文。</p>
+<p>因为 JavaScript 是单线程编程语言，所以 JavaScript 只有一个调用栈。这个调用栈有具有 LIFO 结构，也就意味着只能从栈顶添加或者删除项。 </p>
+<p>让我们回到前面的代码片段并且试着来理解代码在 JavaScript 引擎中是如何执行的。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> second = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Hello there!'</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">const</span> first = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Hi there!'</span>);</div><div class="line">  second();</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'The End'</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line">first();</div></pre></td></tr></table></figure></p>
+<p><img src="/images/callstack.png" alt="上述代码调用栈" title="上述代码调用栈"></p>
+<h3 id="所以发生了什么？"><a href="#所以发生了什么？" class="headerlink" title="所以发生了什么？"></a>所以发生了什么？</h3><p>执行这段代码时，将创建一个全局执行上下文（由 <code>main()</code> 表示）并且将它推入了调用栈的顶部。当遇到对 <code>first()</code> 的调用时， 就将它推到栈的顶部。</p>
+<p>接着，<code>console.log(&#39;Hi there!&#39;)</code> 被推入栈的顶部，当它执行完成时，就从栈中弹出。之后，我们调用 <code>second()</code>，因此 <code>second()</code> 函数被推入栈的顶部。</p>
+<p><code>console.log(&#39;Hello there!&#39;)</code>   被推到堆栈顶部并在执行完成后从堆栈中弹出。<code>Second()</code> 函数完成，因此将它从栈中弹出。</p>
+<p><code>console.log(&#39;The End&#39;)</code> 被推入栈顶并在执行完成后从栈中弹出。随后，<code>first()</code> 函数完成，因此它从栈中离开。</p>
+<p>这个时候程序执行完成，因此全局执行上下文（<code>main()</code>）从栈中弹出。</p>
+<h2 id="异步-JavaScript-是如何工作的？"><a href="#异步-JavaScript-是如何工作的？" class="headerlink" title="异步 JavaScript 是如何工作的？"></a>异步 JavaScript 是如何工作的？</h2><p>现在我们已经了解了调用栈的基本概念，以及同步 JavaScript 的工作原理，让我们回到异步 JavaScript。</p>
+<h3 id="什么是阻塞？"><a href="#什么是阻塞？" class="headerlink" title="什么是阻塞？"></a>什么是阻塞？</h3><p>假设我们正在以同步的方式进行图像处理或网络请求。例如：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> processImage = <span class="function">(<span class="params">image</span>) =&gt;</span> &#123;</div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 对图像进行一些操作</span></div><div class="line"><span class="comment">**/</span></div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Image processed'</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">const</span> networkRequest = <span class="function">(<span class="params">url</span>) =&gt;</span> &#123;</div><div class="line">  <span class="comment">/**</span></div><div class="line"><span class="comment">  * 请求网络资源</span></div><div class="line"><span class="comment">  **/</span></div><div class="line">  <span class="keyword">return</span> someData;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">const</span> greeting = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Hello World'</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line">processImage(logo.jpg);</div><div class="line">networkRequest(<span class="string">'www.somerandomurl.com'</span>);</div><div class="line">greeting();</div></pre></td></tr></table></figure></p>
+<p>进行图像处理和网络请求是需要时间的。因此当 <code>processImg()</code> 函数被调用时，这需要花费的时间取决于图片的尺寸。</p>
+<p>当 <code>processImg()</code> 函数完成时，它将会从调用栈中移除。在这之后，调用 <code>networkRequest()</code> 函数并将其推入栈中。同样，它也需要花费一些时间才能完成执行。</p>
+<p>最后当 <code>networkRequest()</code> 函数完成，<code>greeting()</code> 函数被调用，由于它只包含了一个 <code>console.log</code> 语句，而 <code>console.log</code> 语句通常很快，因此 <code>greeting()</code> 函数会立即执行并返回。</p>
+<p>所以你看，我们必须等到函数（例如 <code>processImg()</code> 或者 <code>networkRequest()</code> ）完成。这意味着这些函数阻塞了调用栈或主线程。因此，当执行上述代码时，我们不能执行其他任何操作。这是不理想的。</p>
+<h3 id="解决方案是什么？"><a href="#解决方案是什么？" class="headerlink" title="解决方案是什么？"></a>解决方案是什么？</h3><p>最简单的解决方案是异步回调。我们使用异步回调来使代码不阻塞。例如：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> networkRequest = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'Async Code'</span>);</div><div class="line">  &#125;, <span class="number">2000</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Hello World'</span>);</div><div class="line">networkRequest();</div></pre></td></tr></table></figure></p>
+<p>这里，我使用了 <code>setTimeout</code> 方法来模拟网络请求。请记住，<code>setTimeout</code> 并不是 JavaScript 引擎的一部分，它是 web API（在浏览器中）和 C/C++ API（在 node.js 中）的一部分。</p>
+<p>要理解这段代码是如何执行的，我们必须要理解一些其他的概念，例如事件循环和回调队列（也被称为任务队列或者消息队列）。</p>
+<p><img src="/images/runtime.png" alt="JavaScript 运行时环境概述" title="JavaScript 运行时环境概述"><br> 事件循环，web API 和消息队列/任务对列都不是 JavaScript 引擎的一部分，而是浏览器 JavaScript 运行时环境或者 Nodejs JavaScript 运行时环境（在 Nodejs 的情况下）的一部分。在 Nodejs 中，web API  被 C/C++ API 所取代。</p>
+<p>现在，让我们回到上述代码，看看它是如何用异步的方式来执行的。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> networkRequest = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'Async Code'</span>);</div><div class="line">  &#125;, <span class="number">2000</span>);</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Hello World'</span>);</div><div class="line"></div><div class="line">networkRequest();</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'The End'</span>);</div></pre></td></tr></table></figure></p>
+<p><img src="/images/eventloop.gif" alt="事件循环" title="事件循环"></p>
+<p>当上述代码在浏览器中加载时，<code>console.log(&#39;Hello World&#39;)</code> 被推入调用栈并在完成之后从调用栈中弹出。接着，遇到对 <code>networkRequest()</code> 的调用，因此将它推入栈顶。</p>
+<p>接下来调用 <code>setTimeout()</code> 函数，因此它也被推入栈顶。<code>setTimeout()</code> 有两个参数：1）回调；2）以毫秒（ms）为单位的时间。</p>
+<p><code>setTimeout()</code> 方法在web API 环境中启动了一个 2s 的计时器。此时 <code>setTimeout()</code> 已完成，并且从调用栈中弹出。在这之后，<code>console.log(&#39;The End&#39;)</code> 被推入调用栈，执行然后在完成之后从调用栈中弹出。</p>
+<p>同时，计时器已过期，现在回调被推入了消息队列中。但是回调并不会立刻被执行，这就是事件循环开始的地方。</p>
+<h3 id="事件循环（Event-Loop）"><a href="#事件循环（Event-Loop）" class="headerlink" title="事件循环（Event Loop）"></a>事件循环（Event Loop）</h3><p>事件循环的作用是查看调用栈并确定调用栈是否为空。如果调用栈为空，它就会去查看消息队列，看看是否有任何挂起的回调等待执行。</p>
+<p>在这个例子中，调用栈为空时消息队列里有一个回调。因此事件循环将回调推入栈顶。</p>
+<p>之后，<code>console.log(&#39;Async Code&#39;)</code> 被推入栈顶，执行并从栈中弹出。此时，回调已经完成，因此将其从栈中移除，程序最终完成。</p>
+<h3 id="DOM-事件"><a href="#DOM-事件" class="headerlink" title="DOM 事件"></a>DOM 事件</h3><p>消息队列还包含来自 DOM 事件的回调，诸如点击事件和键盘事件。例如：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">document</span>.querySelector(<span class="string">'.btn'</span>).addEventListener(<span class="string">'click'</span>,(event) =&gt; &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Button Clicked'</span>);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>在 DOM 事件的情况下，事件监听器位于 web API 环境中，等待着某个事件（例子中是点击事件）发生，当事件发生时，回调函被放入消息队列中，等待被执行。</p>
+<p>事件循环会再一次检查调用栈是否为空，如果为空就将事件回调推送到调用栈中并且执行回调。</p>
+<p>我们已经学了异步回调和   事件是如何执行的，它们使用消息队列来存储所有等待执行的回调。</p>
+<h3 id="ES6-Job-Queue-作业队列-Micro-Task（微任务队列）"><a href="#ES6-Job-Queue-作业队列-Micro-Task（微任务队列）" class="headerlink" title="ES6 Job Queue(作业队列)/Micro-Task（微任务队列）"></a>ES6 Job Queue(作业队列)/Micro-Task（微任务队列）</h3><p>ES6 中引入了 Promise 在 JavaScript 中的使用的作业队列/微任务队列的概念。消息队列和作业队列的区别在于作业队列的优先级比消息队列有更高，这意味着在作业队列/微任务队列中的 promise 任务将会比在消息队列中的回调先执行。</p>
+<p>例如：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(<span class="string">'Script start'</span>);</div><div class="line"></div><div class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'setTimeout'</span>);</div><div class="line">&#125;, <span class="number">0</span>);</div><div class="line"></div><div class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</div><div class="line">    resolve(<span class="string">'Promise resolved'</span>);</div><div class="line">  &#125;).then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res))</div><div class="line">    .catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.log(err));</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Script End'</span>);</div></pre></td></tr></table></figure></p>
+<p>输出：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Script start</div><div class="line">Script End</div><div class="line"><span class="built_in">Promise</span> resolved</div><div class="line">setTimeout</div></pre></td></tr></table></figure></p>
+<p>我们可以看到，promise 在 <code>setTimeout</code> 之前执行，因为 promise 的响应存储在微任务队列中，其优先级高于消息队列。</p>
+<p>让我们再看另一个例子，这次有两个 promise 和两个 setTimeout。<br>例如：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(<span class="string">'Script start'</span>);</div><div class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'setTimeout 1'</span>);</div><div class="line">&#125;, <span class="number">0</span>);</div><div class="line"></div><div class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'setTimeout 2'</span>);</div><div class="line">&#125;, <span class="number">0</span>);</div><div class="line"></div><div class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</div><div class="line">    resolve(<span class="string">'Promise 1 resolved'</span>);</div><div class="line">  &#125;).then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res))</div><div class="line">    .catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.log(err));</div><div class="line"></div><div class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</div><div class="line">    resolve(<span class="string">'Promise 2 resolved'</span>);</div><div class="line">  &#125;).then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res))</div><div class="line">    .catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.log(err));</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Script End'</span>);</div></pre></td></tr></table></figure></p>
+<p>打印输出：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Script start</div><div class="line">Script End</div><div class="line"><span class="built_in">Promise</span> <span class="number">1</span> resolved</div><div class="line"><span class="built_in">Promise</span> <span class="number">2</span> resolved</div><div class="line">setTimeout <span class="number">1</span></div><div class="line">setTimeout <span class="number">2</span></div></pre></td></tr></table></figure></p>
+<p>我们可以看到两个 promise 在 <code>setTimeout</code> 的回调之前执行，因为事件循环将微任务中的任务的优先于消息队列中的任务。</p>
+<p>当事件循环正在执行处于微任务队列中的任务时，如果另一个 promise 决议了，它将会被添加到同一个微任务队列的末尾，并且它将会比在消息队列中的回调先执行，无论回调等待执行的时间有多长。</p>
+<p>例如：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log(<span class="string">'Script start'</span>);</div><div class="line"></div><div class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'setTimeout'</span>);</div><div class="line">&#125;, <span class="number">0</span>);</div><div class="line"></div><div class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</div><div class="line">    resolve(<span class="string">'Promise 1 resolved'</span>);</div><div class="line">  &#125;).then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res));</div><div class="line"></div><div class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</div><div class="line">  resolve(<span class="string">'Promise 2 resolved'</span>);</div><div class="line">  &#125;).then(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</div><div class="line">      <span class="built_in">console</span>.log(res);</div><div class="line">      <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</div><div class="line">        resolve(<span class="string">'Promise 3 resolved'</span>);</div><div class="line">      &#125;)</div><div class="line">    &#125;).then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log(res));</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Script End'</span>);</div></pre></td></tr></table></figure></p>
+<p>打印输出：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Script start</div><div class="line">Script End</div><div class="line"><span class="built_in">Promise</span> <span class="number">1</span> resolved</div><div class="line"><span class="built_in">Promise</span> <span class="number">2</span> resolved</div><div class="line"><span class="built_in">Promise</span> <span class="number">3</span> resolved</div><div class="line">setTimeout</div></pre></td></tr></table></figure></p>
+<p>因此，微任务队列中的所有的任务都会比消息队列中的任务先执行。也就是说，事件循环会先将微任务队列中清空再执行位于消息队列中的回调。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>因此，我们已经了解了异步 JavaScript 如何工作以及其他的概念，例如调用栈，事件循环，消息队列/任务队列和作业队列/微任务队列，它们共同构成了 JavaScript 运行时环境。虽然没有必要为了成为一名出色的 JavaScript 开发人员而学习所有这些概念，但是了解这些概念是有帮助的。</p>
+<p>就是这样，如果你发现这篇文章有用，请点击拍手👏按钮，你也可以在 <a href="https://medium.com/@Sukhjinder" target="_blank" rel="external">Medium</a> 和 <a href="https://twitter.com/sukhjinder_95" target="_blank" rel="external">Twitter</a> 上关注我，如果你有任何疑问，请随时发表评论！ 我很乐意帮忙:)</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/前端/" rel="tag"># 前端</a>
+          
+            <a href="/tags/翻译/" rel="tag"># 翻译</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/17/2018读书记录之《算法小时代：从数学到生活的历变》/" rel="next" title="2018读书记录之《算法小时代：从数学到生活的历变》">
+                <i class="fa fa-chevron-left"></i> 2018读书记录之《算法小时代：从数学到生活的历变》
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Cheryl" />
+            
+              <p class="site-author-name" itemprop="name">Cheryl</p>
+              <p class="site-description motion-element" itemprop="description">反正竞赛还很长</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/linxiaoru" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:linxiaoruxr@163.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/linxiaoruxr" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.facebook.com/xiaoru.lin.56" target="_blank" title="FB Page">
+                    
+                      <i class="fa fa-fw fa-facebook"></i></a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#同步-JavaScript-是如何工作的？"><span class="nav-number">1.</span> <span class="nav-text">同步 JavaScript 是如何工作的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#执行上下文"><span class="nav-number">1.1.</span> <span class="nav-text">执行上下文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用栈"><span class="nav-number">1.2.</span> <span class="nav-text">调用栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#所以发生了什么？"><span class="nav-number">1.3.</span> <span class="nav-text">所以发生了什么？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异步-JavaScript-是如何工作的？"><span class="nav-number">2.</span> <span class="nav-text">异步 JavaScript 是如何工作的？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是阻塞？"><span class="nav-number">2.1.</span> <span class="nav-text">什么是阻塞？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案是什么？"><span class="nav-number">2.2.</span> <span class="nav-text">解决方案是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事件循环（Event-Loop）"><span class="nav-number">2.3.</span> <span class="nav-text">事件循环（Event Loop）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DOM-事件"><span class="nav-number">2.4.</span> <span class="nav-text">DOM 事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ES6-Job-Queue-作业队列-Micro-Task（微任务队列）"><span class="nav-number">2.5.</span> <span class="nav-text">ES6 Job Queue(作业队列)/Micro-Task（微任务队列）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Cheryl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("g4BPmb86npo0pL4nlz2eQUJF-gzGzoHsz", "YQz0vTexBFpHX8AyBVcL1krJ");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
