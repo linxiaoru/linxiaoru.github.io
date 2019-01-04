@@ -2,26 +2,24 @@
 
 
 
+
+
+
+
+
+
+
+
+
   
 
 
-<html class="theme-next gemini use-motion" lang="zh-Hans">
+<html class="theme-next gemini use-motion" lang="">
 <head>
   <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-<meta name="theme-color" content="#222">
-
-
-
-
-
-
-
-
-
-<meta http-equiv="Cache-Control" content="no-transform" />
-<meta http-equiv="Cache-Control" content="no-siteapp" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222"/>
 
 
 
@@ -38,33 +36,6 @@
 
 
 
-  
-  
-  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
-
-
-
-
-
-
-
-<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
-
-<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
-
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=5.1.3">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=5.1.3">
-
-
-
-
-
-
-  <meta name="keywords" content="前端,翻译," />
 
 
 
@@ -75,39 +46,36 @@
 
 
 
-<meta name="description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
-<meta name="keywords" content="前端,翻译">
-<meta property="og:type" content="article">
-<meta property="og:title" content="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
-<meta property="og:url" content="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/index.html">
-<meta property="og:site_name" content="Cheryl Lin">
-<meta property="og:description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
-<meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/images/callstack.png">
-<meta property="og:image" content="http://yoursite.com/images/runtime.png">
-<meta property="og:image" content="http://yoursite.com/images/eventloop.gif">
-<meta property="og:updated_time" content="2018-12-16T17:45:41.865Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
-<meta name="twitter:description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
-<meta name="twitter:image" content="http://yoursite.com/images/callstack.png">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0"/>
 
 
 
-<script type="text/javascript" id="hexo.configurations">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.7.0">
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
     scheme: 'Gemini',
-    version: '5.1.3',
+    version: '6.7.0',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
-    fancybox: true,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
     tabs: true,
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    duoshuo: {
-      userId: '0',
-      author: '博主'
-    },
     algolia: {
       applicationID: '',
       apiKey: '',
@@ -119,12 +87,41 @@
 </script>
 
 
+  
+
+
+
+
+  <meta name="description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
+<meta name="keywords" content="前端,翻译">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
+<meta property="og:url" content="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/index.html">
+<meta property="og:site_name" content="Cheryl Lin">
+<meta property="og:description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
+<meta property="og:image" content="http://yoursite.com/images/callstack.png">
+<meta property="og:image" content="http://yoursite.com/images/runtime.png">
+<meta property="og:image" content="http://yoursite.com/images/eventloop.gif">
+<meta property="og:updated_time" content="2018-12-16T17:45:41.865Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
+<meta name="twitter:description" content="原文：understanding-asynchronous-javascript-the-event-loop  JavaScript 是一种单线程语言，这意味着一次只能发生一件事情。也就是说，JavaScript 引擎只能在单个线程中一次处理一个语句。 虽然单线程语言简化了代码编写，因为你无需担心并发问题，但是这也意味着您无法在不阻塞主线程的情况下执行网络访问等长时间操作。">
+<meta name="twitter:image" content="http://yoursite.com/images/callstack.png">
+
+
+
+
+
 
   <link rel="canonical" href="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/"/>
 
 
 
-
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
 
   <title>[翻译]理解异步 JavaScript-了解 JavaScript 如何工作 | Cheryl Lin</title>
   
@@ -133,7 +130,8 @@
 
 
 
-  <script type="text/javascript">
+
+  <script>
     var _hmt = _hmt || [];
     (function() {
       var hm = document.createElement("script");
@@ -146,9 +144,37 @@
 
 
 
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
 
   
   
@@ -160,23 +186,22 @@
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta ">
+  <div class="site-meta">
     
 
     <div class="custom-logo-site-title">
-      <a href="/"  class="brand" rel="start">
+      <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">Cheryl Lin</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
-      
-        <p class="site-subtitle"></p>
-      
+    
+    
   </div>
 
   <div class="site-nav-toggle">
-    <button>
+    <button aria-label="切换导航栏">
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
@@ -184,55 +209,86 @@
   </div>
 </div>
 
-<nav class="site-nav">
-  
 
+
+<nav class="site-nav">
   
     <ul id="menu" class="menu">
       
         
-        <li class="menu-item menu-item-主页">
-          <a href="/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
-            
-            主页
-          </a>
-        </li>
-      
         
-        <li class="menu-item menu-item-前端">
-          <a href="/tags/前端" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-tag"></i> <br />
-            
-            前端
-          </a>
-        </li>
-      
         
-        <li class="menu-item menu-item-随笔">
-          <a href="/tags/随笔" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
-            
-            随笔
-          </a>
-        </li>
+          
+          <li class="menu-item menu-item-主页">
+
+    
+    
+    
       
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>主页</a>
+
+  </li>
         
-        <li class="menu-item menu-item-归档">
-          <a href="/archives/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
-            
-            归档
-          </a>
-        </li>
+        
+        
+          
+          <li class="menu-item menu-item-前端">
+
+    
+    
+    
       
+    
+
+    
+
+    <a href="/tags/前端" rel="section"><i class="menu-item-icon fa fa-fw fa-tag"></i> <br/>前端</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-随笔">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/随笔" rel="section"><i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br/>随笔</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
+
+  </li>
 
       
+      
     </ul>
+  
+
   
 
   
@@ -240,12 +296,23 @@
 
 
 
- </div>
+  
+
+
+
+</div>
     </header>
+
+    
+
 
     <main id="main" class="main">
       <div class="main-inner">
         <div class="content-wrap">
+          
+            
+
+          
           <div id="content" class="content">
             
 
@@ -258,21 +325,23 @@
   
   
 
+  
+
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
   
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/"/>
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Cheryl">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Cheryl"/>
+      <meta itemprop="description" content="反正竞赛还很长"/>
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/13373856?s=460&v=4"/>
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Cheryl Lin">
+      <meta itemprop="name" content="Cheryl Lin"/>
     </span>
 
     
@@ -280,11 +349,20 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">[翻译]理解异步 JavaScript-了解 JavaScript 如何工作</h1>
+          <h1 class="post-title" itemprop="name headline">[翻译]理解异步 JavaScript-了解 JavaScript 如何工作
+
+              
+            
+          </h1>
         
 
         <div class="post-meta">
           <span class="post-time">
+
+            
+            
+            
+
             
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
@@ -292,13 +370,18 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-17T01:01:36+08:00">
-                2018-12-17
-              </time>
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-17 01:01:36 / 修改时间：01:45:41" itemprop="dateCreated datePublished" datetime="2018-12-17T01:01:36+08:00">2018-12-17</time>
             
 
             
+              
 
+              
             
           </span>
 
@@ -310,16 +393,7 @@
 
           
           
-             <span id="/2018/12/17/翻译-理解异步-JavaScript-了解-JavaScript-如何工作/" class="leancloud_visitors" data-flag-title="[翻译]理解异步 JavaScript-了解 JavaScript 如何工作">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
+
           
 
           
@@ -400,12 +474,18 @@
 
       
     </div>
+
+    
+
     
     
     
 
     
 
+    
+      
+    
     
 
     
@@ -457,17 +537,10 @@
   </article>
 
 
-
-    <div class="post-spread">
-      
-    </div>
   </div>
 
 
           </div>
-          
-
-
           
 
   
@@ -503,96 +576,129 @@
         </ul>
       
 
-      <section class="site-overview-wrap sidebar-panel">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <img class="site-author-image" itemprop="image"
-                src="/images/avatar.jpg"
-                alt="Cheryl" />
+                src="https://avatars3.githubusercontent.com/u/13373856?s=460&v=4"
+                alt="Cheryl"/>
             
               <p class="site-author-name" itemprop="name">Cheryl</p>
               <p class="site-description motion-element" itemprop="description">反正竞赛还很长</p>
           </div>
 
-          <nav class="site-state motion-element">
-
-            
-              <div class="site-state-item site-state-posts">
+          
+            <nav class="site-state motion-element">
               
-                <a href="/archives">
-              
-                  <span class="site-state-item-count">10</span>
-                  <span class="site-state-item-name">日志</span>
-                </a>
-              </div>
-            
-
-            
-
-            
-              
-              
-              <div class="site-state-item site-state-tags">
+                <div class="site-state-item site-state-posts">
                 
-                  <span class="site-state-item-count">8</span>
-                  <span class="site-state-item-name">标签</span>
+                  <a href="/archives">
                 
-              </div>
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/linxiaoru" title="GitHub &rarr; https://github.com/linxiaoru" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:linxiaoruxr@163.com" title="E-Mail &rarr; mailto:linxiaoruxr@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://twitter.com/linxiaoruxr" title="Twitter &rarr; https://twitter.com/linxiaoruxr" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://www.facebook.com/xiaoru.lin.56" title="FB Page &rarr; https://www.facebook.com/xiaoru.lin.56" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
             
-
-          </nav>
-
           
-
-          <div class="links-of-author motion-element">
-            
-              
-                <span class="links-of-author-item">
-                  <a href="https://github.com/linxiaoru" target="_blank" title="GitHub">
-                    
-                      <i class="fa fa-fw fa-github"></i></a>
-                </span>
-              
-                <span class="links-of-author-item">
-                  <a href="mailto:linxiaoruxr@163.com" target="_blank" title="E-Mail">
-                    
-                      <i class="fa fa-fw fa-envelope"></i></a>
-                </span>
-              
-                <span class="links-of-author-item">
-                  <a href="https://twitter.com/linxiaoruxr" target="_blank" title="Twitter">
-                    
-                      <i class="fa fa-fw fa-twitter"></i></a>
-                </span>
-              
-                <span class="links-of-author-item">
-                  <a href="https://www.facebook.com/xiaoru.lin.56" target="_blank" title="FB Page">
-                    
-                      <i class="fa fa-fw fa-facebook"></i></a>
-                </span>
-              
-            
-          </div>
-
-          
-          
-
-          
-          
-
           
 
         </div>
-      </section>
+      </div>
 
       
       <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
           <div class="post-toc">
 
             
-              
+            
+            
             
 
             
@@ -600,7 +706,7 @@
             
 
           </div>
-        </section>
+        </div>
       <!--/noindex-->
       
 
@@ -616,17 +722,19 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
-  <span class="with-love">
+        <div class="copyright">&copy; 2015 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">Cheryl</span>
 
   
+
+  
 </div>
 
 
-  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.3.9</div>
 
 
 
@@ -634,28 +742,34 @@
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.7.0</div>
 
 
 
 
         
 <div class="busuanzi-count">
-  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
-    <span class="site-uv">
-      本站访客数
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
       <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-      人次
     </span>
   
 
   
-    <span class="site-pv">
-      本站总访问量
+    <span class="post-meta-divider">|</span>
+  
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
       <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
-      次
     </span>
   
 </div>
@@ -680,11 +794,14 @@
 
     
 
+    
+
+    
   </div>
 
   
 
-<script type="text/javascript">
+<script>
   if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
     window.Promise = null;
   }
@@ -698,7 +815,6 @@
 
 
 
-  
 
 
 
@@ -711,43 +827,27 @@
 
 
 
-  
-  
-    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
-  
+
+
+
+
 
   
-  
-    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
-  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
 
   
-  
-    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
-  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
 
   
-  
-    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-  
-
-  
-  
-    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-  
-
-  
-  
-    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
-  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
 
 
   
 
 
-  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+  <script src="/js/src/utils.js?v=6.7.0"></script>
 
-  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+  <script src="/js/src/motion.js?v=6.7.0"></script>
 
 
 
@@ -755,36 +855,22 @@
   
 
 
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+  <script src="/js/src/affix.js?v=6.7.0"></script>
 
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
-
-
-
-  
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
 
 
 
   
-
-
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
 
 
 
   
 
 
-  
-
-
-
-
-	
-
-
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
 
 
 
@@ -792,10 +878,7 @@
 
 
 
-
-
   
-
 
 
 
@@ -816,115 +899,21 @@
   
 
   
-  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
-  <script>AV.initialize("g4BPmb86npo0pL4nlz2eQUJF-gzGzoHsz", "YQz0vTexBFpHX8AyBVcL1krJ");</script>
-  <script>
-    function showTime(Counter) {
-      var query = new AV.Query(Counter);
-      var entries = [];
-      var $visitors = $(".leancloud_visitors");
-
-      $visitors.each(function () {
-        entries.push( $(this).attr("id").trim() );
-      });
-
-      query.containedIn('url', entries);
-      query.find()
-        .done(function (results) {
-          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
-
-          if (results.length === 0) {
-            $visitors.find(COUNT_CONTAINER_REF).text(0);
-            return;
-          }
-
-          for (var i = 0; i < results.length; i++) {
-            var item = results[i];
-            var url = item.get('url');
-            var time = item.get('time');
-            var element = document.getElementById(url);
-
-            $(element).find(COUNT_CONTAINER_REF).text(time);
-          }
-          for(var i = 0; i < entries.length; i++) {
-            var url = entries[i];
-            var element = document.getElementById(url);
-            var countSpan = $(element).find(COUNT_CONTAINER_REF);
-            if( countSpan.text() == '') {
-              countSpan.text(0);
-            }
-          }
-        })
-        .fail(function (object, error) {
-          console.log("Error: " + error.code + " " + error.message);
-        });
-    }
-
-    function addCount(Counter) {
-      var $visitors = $(".leancloud_visitors");
-      var url = $visitors.attr('id').trim();
-      var title = $visitors.attr('data-flag-title').trim();
-      var query = new AV.Query(Counter);
-
-      query.equalTo("url", url);
-      query.find({
-        success: function(results) {
-          if (results.length > 0) {
-            var counter = results[0];
-            counter.fetchWhenSave(true);
-            counter.increment("time");
-            counter.save(null, {
-              success: function(counter) {
-                var $element = $(document.getElementById(url));
-                $element.find('.leancloud-visitors-count').text(counter.get('time'));
-              },
-              error: function(counter, error) {
-                console.log('Failed to save Visitor num, with error message: ' + error.message);
-              }
-            });
-          } else {
-            var newcounter = new Counter();
-            /* Set ACL */
-            var acl = new AV.ACL();
-            acl.setPublicReadAccess(true);
-            acl.setPublicWriteAccess(true);
-            newcounter.setACL(acl);
-            /* End Set ACL */
-            newcounter.set("title", title);
-            newcounter.set("url", url);
-            newcounter.set("time", 1);
-            newcounter.save(null, {
-              success: function(newcounter) {
-                var $element = $(document.getElementById(url));
-                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
-              },
-              error: function(newcounter, error) {
-                console.log('Failed to create');
-              }
-            });
-          }
-        },
-        error: function(error) {
-          console.log('Error:' + error.code + " " + error.message);
-        }
-      });
-    }
-
-    $(function() {
-      var Counter = AV.Object.extend("Counter");
-      if ($('.leancloud_visitors').length == 1) {
-        addCount(Counter);
-      } else if ($('.post-title-link').length > 1) {
-        showTime(Counter);
-      }
-    });
-  </script>
-
-
 
   
 
   
+
+  
+
+  
+
+  
+
+  
+
+  
+
   
 
   
